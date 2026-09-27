@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Health Risk Analyzer</title>
+
+    <style>
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #eef3f8 0%, #d4e0ed 100%);
+            padding: 30px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 1.1em;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .main {
+            display: flex;
+            gap: 30px;
+        }
+
+        .box {
+            flex: 1;
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .box h2 {
+            color: #2d3748;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 5px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9em;
+        }
+
+        label .normal-range {
+            font-weight: normal;
+            color: #718096;
+            font-size: 0.8em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #4299e1;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #2563a6, #1a365d);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 166, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            margin-top: 10px;
+        }
+
+        .result {
+            padding: 15px 20px;
+            margin-top: 12px;
+            border-radius: 8px;
+            font-size: 17px;
+            border-left: 5px solid;
+            transition: all 0.3s;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .safe {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .risk {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .high-risk {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+
+        .result .status {
+            font-weight: 700;
+        }
+
+        .result .probability {
+            font-size: 0.85em;
+            background: rgba(0,0,0,0.05);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .probability-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .probability-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .prob-low { background: #28a745; }
+        .prob-medium { background: #ffc107; }
+        .prob-high { background: #dc3545; }
+
+        .note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ebf8ff;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+            font-size: 0.95em;
+            color: #2c5282;
+        }
+
+        .note strong {
+            color: #1a365d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-state .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .health-tips {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border-left: 4px solid #38a169;
+            font-size: 0.9em;
+        }
+
+        @media(max-width: 850px) {
+            .main {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #4299e1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-risk {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .badge-safe {
+            background: #a8e6cf;
+            color: #00b894;
+        }
+
+        .input-hint {
+            font-size: 0.75em;
+            color: #718096;
+            margin-top: 3px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div style="display:flex; justify-content:flex-end; gap:15px; align-items:center; margin-bottom:10px; color:#718096;">
+        <span>Signed in as <strong>{{ g.user['username'] }}</strong></span>
+        <a href="{{ url_for('logout') }}" style="color:#2563a6; font-weight:600;">Log out</a>
+    </div>
+
+    <h1>
+        🏥 Health Risk Analyzer
+    </h1>
+
+
+    <p class="subtitle">
+        AI/ML Disease Risk Prediction System
+    </p>
+
+
+    <div class="main">
+
+
+        <!-- INPUT FORM -->
+        <div class="box">
+
+
+            <h2>
+                📋 Enter Your Details
+            </h2>
+
+
+            <form method="POST" id="healthForm">
+
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age (years) <span class="normal-range">(20-80)</span></label>
+                        <input
+                            type="number"
+                            name="age"
+                            value="{{ age }}"
+                            min="1"
+                            max="120"
+                            required
+                            placeholder="e.g., 45"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender">
+                            <option value="Male" {% if gender == "Male" %}selected{% endif %}>
+                                Male
+                            </option>
+                            <option value="Female" {% if gender == "Female" %}selected{% endif %}>
+                                Female
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>BMI <span class="normal-range">(18.5-24.9)</span></label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            name="bmi"
+                            value="{{ bmi }}"
+                            min="10"
+                            max="60"
+                            required
+                            placeholder="e.g., 22.5"
+                        >
+                        <div class="input-hint">Normal: 18.5-24.9</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Blood Pressure (mmHg) <span class="normal-range">(90-120)</span></label>
+                        <input
+                            type="number"
+                            name="bp"
+                            value="{{ bp }}"
+                            min="60"
+                            max="220"
+                            required
+                            placeholder="e.g., 118"
+                        >
+                        <div class="input-hint">Normal: Systolic &lt; 120</div>
+                    </div>
+                </div>
+
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Glucose (mg/dL) <span class="normal-range">(70-100)</span></label>
+                        <input
+                            type="number"
+                            name="glucose"
+                            value="{{ glucose }}"
+                            min="40"
+                            max="400"
+                            required
+                            placeholder="e.g., 95"
+                        >
+                        <div class="input-hint">Fasting: &lt; 100 mg/dL</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cholesterol (mg/dL) <span class="normal-range">(&lt; 200)</span></label>
+                        <input
+                            type="number"
+                            name="chol"
+                            value="{{ chol }}"
+                            min="100"
+                            max="400"
+                            required
+                            placeholder="e.g., 190"
+                        >
+                        <div class="input-hint">Desirable: &lt; 200</div>
+                    </div>
+                </div>
+
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Heart Rate (bpm) <span class="normal-range">(60-100)</span></label>
+                        <input
+                            type="number"
+                            name="hr"
+                            value="{{ hr }}"
+                            min="40"
+                            max="200"
+                            required
+                            placeholder="e.g., 70"
+                        >
+                        <div class="input-hint">Normal resting: 60-100 bpm</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Smoking</label>
+                        <select name="smoking">
+                            <option value="No" {% if smoking == "No" %}selected{% endif %}>
+                                No
+                            </option>
+                            <option value="Yes" {% if smoking == "Yes" %}selected{% endif %}>
+                                Yes
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label>Regular Exercise</label>
+                    <select name="exercise">
+                        <option value="Yes" {% if exercise == "Yes" %}selected{% endif %}>
+                            Yes
+                        </option>
+                        <option value="No" {% if exercise == "No" %}selected{% endif %}>
+                            No
+                        </option>
+                    </select>
+                    <div class="input-hint">At least 30 min, 5 days/week</div>
+                </div>
+
+
+                <button type="submit" id="predictBtn">
+                    🔍 CHECK HEALTH RISK
+                </button>
+
+
+            </form>
+
+
+        </div>
+
+
+        <!-- RESULTS -->
+        <div class="box">
+
+
+            <h2>
+                📊 Results
+            </h2>
+
+
+            <div class="result-container">
+
+            {% if result %}
+
+
+                {% if result.error %}
+
+
+                    <div class="result error">
+                        ❌ {{ result.error }}
+                    </div>
+
+
+                {% else %}
+
+
+                    <!-- Heart Result -->
+                    {% set heart_risk = result.heart_level != 'LOW' %}
+                    <div class="result
+                    {% if result.heart_level == 'HIGH' %}high-risk
+                    {% elif result.heart_level == 'MEDIUM' %}risk
+                    {% else %}safe{% endif %}">
+
+                        <div class="result-header">
+                            <span>
+                                ❤️ Heart Disease:
+                                <strong class="status">{{ result.heart }}</strong>
+                            </span>
+                            <span class="probability">
+                                {{ result.heart_prob }}% risk
+                            </span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-bar-fill 
+                                {% if result.heart_level == 'LOW' %}prob-low
+                                {% elif result.heart_prob < 60 %}prob-medium
+                                {% else %}prob-high{% endif %}"
+                                style="width: {{ result.heart_prob }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Diabetes Result -->
+                    {% set diabetes_risk = result.diabetes_level != 'LOW' %}
+                    <div class="result
+                    {% if result.diabetes_level == 'HIGH' %}high-risk
+                    {% elif result.diabetes_level == 'MEDIUM' %}risk
+                    {% else %}safe{% endif %}">
+
+                        <div class="result-header">
+                            <span>
+                                🩸 Diabetes:
+                                <strong class="status">{{ result.diabetes }}</strong>
+                            </span>
+                            <span class="probability">
+                                {{ result.diabetes_prob }}% risk
+                            </span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-bar-fill 
+                                {% if result.diabetes_level == 'LOW' %}prob-low
+                                {% elif result.diabetes_prob < 60 %}prob-medium
+                                {% else %}prob-high{% endif %}"
+                                style="width: {{ result.diabetes_prob }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Kidney Result -->
+                    {% set kidney_risk = result.kidney_level != 'LOW' %}
+                    <div class="result
+                    {% if result.kidney_level == 'HIGH' %}high-risk
+                    {% elif result.kidney_level == 'MEDIUM' %}risk
+                    {% else %}safe{% endif %}">
+
+                        <div class="result-header">
+                            <span>
+                                🫘 Kidney Disease:
+                                <strong class="status">{{ result.kidney }}</strong>
+                            </span>
+                            <span class="probability">
+                                {{ result.kidney_prob }}% risk
+                            </span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-bar-fill 
+                                {% if result.kidney_level == 'LOW' %}prob-low
+                                {% elif result.kidney_prob < 60 %}prob-medium
+                                {% else %}prob-high{% endif %}"
+                                style="width: {{ result.kidney_prob }}%;">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Summary -->
+                    {% if heart_risk or diabetes_risk or kidney_risk %}
+                        <div class="note" style="border-left-color: #dc3545; background: #fff5f5;">
+                            <strong>⚠️ Health Alert:</strong>
+                            One or more risk factors detected. 
+                            Please consult a healthcare professional for proper diagnosis and guidance.
+                        </div>
+                    {% else %}
+                        <div class="note" style="border-left-color: #28a745; background: #f0fff4;">
+                            <strong>✅ Good News!</strong>
+                            No significant risk detected based on the provided information. 
+                            Continue maintaining a healthy lifestyle!
+                        </div>
+                    {% endif %}
+
+
+                    <!-- Health Tips -->
+                    <div class="health-tips">
+                        <strong>💡 Health Tips:</strong>
+                        <ul style="margin: 5px 0 0 20px; padding: 0;">
+                            {% if result.bmi %}
+                                <li>Maintain a healthy BMI (18.5-24.9)</li>
+                            {% endif %}
+                            <li>Eat a balanced diet rich in fruits and vegetables</li>
+                            <li>Exercise regularly (at least 30 min/day)</li>
+                            <li>Get regular health checkups</li>
+                            <li>Manage stress effectively</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="note">
+                        <strong>⚠️ Medical Disclaimer:</strong>
+                        This is an academic AIML project for educational purposes only.
+                        <br>Please consult a qualified healthcare professional for medical diagnosis.
+                    </div>
+
+
+                {% endif %}
+
+
+            {% else %}
+
+
+                <div class="empty-state">
+                    <div class="icon">🔬</div>
+                    <h3>Ready for Analysis</h3>
+                    <p>Enter your health details and click<br>
+                    <strong>"Check Health Risk"</strong> to get predictions.</p>
+                    <p style="font-size: 0.9em; color: #a0aec0; margin-top: 15px;">
+                        All inputs are validated for realistic ranges
+                    </p>
+                </div>
+
+
+            {% endif %}
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+    // Add loading animation on form submit
+    document.getElementById('healthForm').addEventListener('submit', function() {
+        const btn = document.getElementById('predictBtn');
+        btn.innerHTML = '⏳ Analyzing...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+    });
+    
+    // Validate numeric inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.min && parseFloat(this.value) < parseFloat(this.min)) {
+                this.value = this.min;
+            }
+            if (this.max && parseFloat(this.value) > parseFloat(this.max)) {
+                this.value = this.max;
+            }
+        });
+    });
+</script>
+
+
+</body>
+
+</html>
